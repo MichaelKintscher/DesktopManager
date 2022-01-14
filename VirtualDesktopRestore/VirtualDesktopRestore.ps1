@@ -2,6 +2,8 @@
 # Script.ps1
 #
 
+
+
 # ====================== Config Input Functions =======================
 
 function Get-Config-Input {
@@ -17,137 +19,131 @@ function Get-Config-Input {
         # File does not exist, so create it.
         New-Item -Path $ConfigFileName -ItemType File
     }
+
+    return $ConfigData
 }
 
 
-# ======================== Workspace Functions ========================
 
-# Classwork
-function Setup-Research-Classwork {
-    # Create the new desktop.
-    $NewDesktop = New-Desktop | Set-DesktopName -Name "Classwork" -PassThru
+# ======================= Launch App Functions ========================
 
-    # Launch Slack. Based on: https://stackoverflow.com/questions/32146706/slack-url-to-open-a-channel-from-browser
-    #    Team: 
-    #    Channel: general
-    $NewSlack = Start-Process "slack://channel?id=C02T2MKE4EN&team=T02SN3DJ8DV" -PassThru
+function Launch-Slack {
+    # Define the parameters.
+    param (
+        $TeamID, $ChannelID
+    )
 
-    # Move the new apps to the new desktop.
-    $NewSlack[0].MainWindowHandle | Move-Window ($NewDesktop) | Switch-Desktop
-    $NewEdge[0].MainWindowHandle | Move-Window ($NewDesktop) | Switch-Desktop
+    # Ensure Slack has a visible window running.
+    $SlackProcess = Start-Process ("slack://channel?id=" + $ChannelID + "&team=" + $TeamID) -PassThru
+    Sleep 3
+
+    # Get the slack process with the window handle.
+    $SlackProcess = Get-Process -Name ("Slack") | Where-Object {$_.MainWindowHandle -ne 0}
+    if ($SlackProcess -eq $null) {
+        Write-Host "WARNING - SlackProcess is null!"
+    }
+    else {
+        Write-Host ("Slack has a MainWindowHandle of " + $SlackProcess.MainWindowHandle)
+    }
+    return $SlackProcess
 }
 
-# Research - XR Ed Survey
-function Setup-Research-XR-Ed-Survey {
-    # Create the new desktop.
-    $NewDesktop = New-Desktop | Set-DesktopName -Name "Research - XR Survey" -PassThru
+function Launch-Visual-Studio {
+    # Define the parameters.
+    param (
+        $InstallPath
+    )
 
-    # Launch Edge to display the following websites:
-    #    - Google Chat
-    #    - Google Drive, Team Drive, XR Ed Survey Paper
-    $NewEdge = Create-Browser-Window -URLsToOpen https://mail.google.com/chat/u/1/#chat/dm/ihPWGgAAAAE, https://drive.google.com/drive/u/1/folders/0AOPuz4T3MGdNUk9PVA
+    # Ensure Visual Studio has a visible window running.
+    $VisualStudioProcess = Start-Process $InstallPath -PassThru
+    Sleep 3
 
-    # Move the new apps to the new desktop.
-    $NewEdge[0].MainWindowHandle | Move-Window ($NewDesktop) | Switch-Desktop
+    # Get the Visual Studio process with the window handle.
+    if ($VisualStudioProcess -eq $null) {
+        Write-Host "WARNING - VisualStudioProcess is null!"
+    }
+    else {
+        Write-Host ("Visual Studio has a MainWindowHandle of " + $VisualStudioProcess.MainWindowHandle)
+    }
+    return $VisualStudioProcess
 }
 
-# Research - AR Paper
-function Setup-Research-AR-Paper {
-    # Create the new desktop.
-    $NewDesktop = New-Desktop | Set-DesktopName -Name "Research - AR Paper" -PassThru
+function Launch-Signal {
+    # Define the parameters.
+    param (
+        $InstallPath
+    )
 
-    # Launch Edge to display the following websites:
-    #    - Google Chat
-    #    - Google Drive, Team Drive, Thesis - Michael Kintscher
-    $NewEdge = Create-Browser-Window -URLsToOpen https://mail.google.com/chat/u/1/#chat/dm/ihPWGgAAAAE, https://drive.google.com/drive/u/1/folders/0AJbDQ0JQLWIiUk9PVA
+    # Ensure Signal has a visible window running.
+    $SignalProcess = Start-Process $InstallPath -PassThru
+    Sleep 3
 
-    # Move the new apps to the new desktop.
-    $NewEdge[0].MainWindowHandle | Move-Window ($NewDesktop) | Switch-Desktop
+    # Get the Signal process with the window handle.
+    if ($SignalProcess -eq $null) {
+        Write-Host "WARNING - SignalProcess is null!"
+    }
+    else {
+        Write-Host ("Signal has a MainWindowHandle of " + $SignalProcess.MainWindowHandle)
+    }
+    return $SignalProcess
 }
 
-# Coding
-function Setup-Coding {
-    # Create the new desktop.
-    $NewDesktop = New-Desktop | Set-DesktopName -Name "Coding" -PassThru
+function Launch-Calendar {
+    # Define the parameters.
+    param (
+        $InstallPath
+    )
 
-    # Launch Edge to display the following websites:
-    #    - GitHub
-    $NewEdge = Create-Browser-Window -URLsToOpen https://github.com/MichaelKintscher
+    # Initialize the process handle to null.
+    $CalendarProcess = $null
 
-    # Move the new apps to the new desktop.
-    $NewEdge[0].MainWindowHandle | Move-Window ($NewDesktop) | Switch-Desktop
+    if ($InstallPath -eq $null) {
+        # No path given, so start the default Windows Calendar app.
+        $CalendarProcess = Start-Process outlookcal: -PassThru
+    }
+    else {
+        # Ensure Calendar has a visible window running.
+        $CalendarProcess = Start-Process $InstallPath -PassThru
+    }
+    Sleep 3
+
+    # Get the Calendar process with the window handle.
+    if ($CalendarProcess -eq $null) {
+        Write-Host "WARNING - CalendarProcess is null!"
+    }
+    else {
+        Write-Host ("Calendar has a MainWindowHandle of " + $CalendarProcess.MainWindowHandle)
+    }
+    return $CalendarProcess
 }
 
-# GSA
-function Setup-Work-GSA {
-    # Create the new desktop.
-    $NewDesktop = New-Desktop | Set-DesktopName -Name "GSA" -PassThru
+function Launch-Email {
+    # Define the parameters.
+    param (
+        $InstallPath
+    )
 
-    # Launch Edge to display the following websites:
-    #    - Upcoming Zoom Meetings
-    #    - Canvas
-    $NewEdge = Create-Browser-Window -URLsToOpen https://asu.zoom.us/meeting#/upcoming, https://canvas.asu.edu/courses/106062
+    # Initialize the process handle to null.
+    $EmailProcess = $null
 
-    # Move the new apps to the new desktop.
-    $NewEdge[0].MainWindowHandle | Move-Window ($NewDesktop) | Switch-Desktop
-}
+    if ($InstallPath -eq $null) {
+        # No path given, so start the default Windows Mail app.
+        $NewEmail = Start-Process "ms-unistore-email://" -PassThru
+    }
+    else {
+        # Ensure Email has a visible window running.
+        $EmailProcess = Start-Process $InstallPath -PassThru
+    }
+    Sleep 3
 
-# GRADient
-function Setup-GRADient {
-    # Create the new desktop.
-    $NewDesktop = New-Desktop | Set-DesktopName -Name "GRADient" -PassThru
-
-    # Launch Slack. Based on: https://stackoverflow.com/questions/32146706/slack-url-to-open-a-channel-from-browser
-    #    Team: GRADient
-    #    Channel: general
-    $NewSlack = Start-Process "slack://channel?id=CCKSDQ57G&team=TCJLVA6TF" -PassThru
-
-    # Launch Edge to display the following websites:
-    #    - Google Drive, Team Drive, GRADient
-    $NewEdge = Create-Browser-Window -URLsToOpen https://drive.google.com/drive/u/1/folders/0AIalcm3xUMfBUk9PVA
-
-    # Move the new apps to the new desktop.
-    $NewSlack[0].MainWindowHandle | Move-Window ($NewDesktop) | Switch-Desktop
-    $NewEdge[0].MainWindowHandle | Move-Window ($NewDesktop) | Switch-Desktop
-}
-
-# Video Production
-function Setup-Video-Production {
-    # Create the new desktop.
-    $NewDesktop = New-Desktop | Set-DesktopName -Name "Video Production" -PassThru | Switch-Desktop
-}
-
-# NOAC OA
-function Setup-Work-OA-NOAC {
-    # Create the new desktop.
-    $NewDesktop = New-Desktop | Set-DesktopName -Name "OA" -PassThru
-
-    # Launch Slack. Based on: https://stackoverflow.com/questions/32146706/slack-url-to-open-a-channel-from-browser
-    #    Team: 
-    #    Channel: general
-    $NewSlack = Start-Process "slack://channel?id=C061MCJLU&team=T061MGC1W" -PassThru
-
-    # Move the new apps to the new desktop.
-    $NewSlack[0].MainWindowHandle | Move-Window ($NewDesktop) | Switch-Desktop
-}
-
-function Setup-Cross-Workspace-Apps {
-
-    #[Diagnostics.Process[]]$Apps
-
-    # Launch Signal.
-    $NewSignal = Start-Process "[Signal install location]" -PassThru
-    
-    # Launch Calendar.
-    $NewCalendar = Start-Process outlookcal: -PassThru
-
-    # Launch Email.
-    $NewEmail = Start-Process "ms-unistore-email://" -PassThru
-
-    # Pin each app.
-    #foreach ($newApp in $Apps) {
-        #Pin-Application ($newApp[0].MainWindowHandle)
-    #}
+    # Get the Email process with the window handle.
+    if ($EmailProcess -eq $null) {
+        Write-Host "WARNING - EmailProcess is null!"
+    }
+    else {
+        Write-Host ("Email has a MainWindowHandle of " + $EmailProcess.MainWindowHandle)
+    }
+    return $EmailProcess
 }
 
 function Create-Browser-Window {
@@ -159,7 +155,7 @@ function Create-Browser-Window {
     # Based on: https://stackoverflow.com/questions/40493141/how-to-utilize-powershell-to-open-an-application-with-a-command
     #     Starts a new window.
     #     -PassThru is needed to enable output to be stored in the variable. See: https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.management/start-process?view=powershell-7.2
-    $NewEdge = Start-Process -FilePath "[Edge install location]" -PassThru
+    $NewEdge = Start-Process -FilePath "C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe" -PassThru
 
     # Start a new tab for each URL to open.
     foreach ($URLParam in $URLsToOpen) {
@@ -167,9 +163,99 @@ function Create-Browser-Window {
         Start-Process microsoft-edge:$URLParam
     }
 
+    # Wait for everything to finish loading, so MainWindowHandle is not null.
+    Sleep 3
+
+    if ($NewEdge -eq $null) {
+        Write-Host "WARNING - EdgeProcess is null!"
+    }
+    else {
+        Write-Host ("Edge has a MainWindowHandle of " + $NewEdge.MainWindowHandle)
+    }
+
     # Return the handle to the new browser window.
     return $NewEdge
 }
+
+
+
+# ======================== Workspace Functions ========================
+
+function Setup-Workspaces {
+    # Define the parameter.
+    param (
+        $WorkspaceData
+    )
+
+    # Setup each workspace.
+    foreach ($WorkspaceInfo in $WorkspaceData.workspaces) {
+        #$WorkspaceInfo = $WorkspaceData.workspaces[7]
+        # Create the new desktop.
+        $NewDesktop = New-Desktop | Set-DesktopName -Name $WorkspaceInfo.name -PassThru | Switch-Desktop
+
+        # Set up each app.
+        [Diagnostics.Process[]]$Apps = $null
+        foreach ($AppInfo in $WorkspaceInfo.apps) {
+            if ($AppInfo.name -eq "Slack") {
+                Write-Host "Launching Slack..."
+                $Apps += Launch-Slack -ChannelID ($AppInfo.channel_id) -TeamID ($AppInfo.team_id)
+                Write-Host "Slack launched!"
+            }
+            elseif ($AppInfo.name -eq "Visual Studio") {
+                Write-Host "Launching Visual Studio..."
+                $Apps += Launch-Visual-Studio -InstallPath $AppInfo.path
+                Write-Host "Visual Studio launched!"
+            }
+        }
+        
+        # Move each app to the new virtual desktop.
+        if ($Apps.length -eq 0) {
+            Write-Host "No apps to move."
+        }
+        else {
+            Write-Host ("Moving " + $Apps.length + " apps")
+        }
+        foreach ($newApp in $Apps) {
+            Write-Host (" - Moving " + $newApp.ProcessName + " to desktop " + (Get-DesktopName $NewDesktop))
+            $newApp.MainWindowHandle | Move-Window ($NewDesktop) | Switch-Desktop
+        }
+
+        # Set up each webpage.
+        [string[]]$UrlsToLaunch = $null
+        foreach ($WebpageInfo in $WorkspaceInfo.webpages) {
+            $UrlsToLaunch += $WebpageInfo.url
+        }
+        $NewEdge = Create-Browser-Window -URLsToOpen $UrlsToLaunch -PassThru
+        Write-Host ("Moving " + $NewEdge.ProcessName + " to desktop " + (Get-DesktopName $NewDesktop))
+        $NewEdge.MainWindowHandle | Move-Window ($NewDesktop) | Switch-Desktop
+
+    }
+
+    #Setup the cross-workspace.
+    foreach ($AppInfo in $WorkspaceData.cross_workspace.apps) {
+        if ($AppInfo.name -eq "Signal") {
+            Write-Host "Launching Signal..."
+            $Apps += Launch-Signal -InstallPath $AppInfo.path
+            Write-Host "Signal launched!"
+        }
+        elseif ($AppInfo.name -eq "Calendar") {
+            Write-Host "Launching Calendar..."
+            $Apps += Launch-Calendar -InstallPath $AppInfo.path
+            Write-Host "Calendar launched!"
+        }
+        elseif ($AppInfo.name -eq "Mail") {
+            Write-Host "Launching Mail..."
+            $Apps += Launch-Email -InstallPath $AppInfo.path
+            Write-Host "Mail launched!"
+        }
+    }
+
+    # Pin each app.
+    #foreach ($newApp in $Apps) {
+        #Pin-Application ($newApp[0].MainWindowHandle)
+    #}
+}
+
 
 
 # ========================== Test Functions ===========================
@@ -181,16 +267,17 @@ function Test-Browser-Launch {
     #Start-Sleep -Milliseconds 2000
     $NewEdge.MainWindowHandle | Move-Window ($NewDesktop) | Switch-Desktop
     #Move-Window -Desktop ($NewDesktop) -Hwnd ($NewEdge.MainWindowHandle) | Switch-Desktop
-    Write-Output $NewDesktop
-    Write-Output $NewEdge
+    Write-Host $NewDesktop
+    Write-Host $NewEdge
     Pin-Window ($NewEdge.MainWindowHandle)
 }
 
 function Test-App-Launch {
     # Launch Email.
     $NewEmail = Start-Process -FilePath "C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe" -PassThru
-    Write-Output $NewEmail[0].MainWindowHandle
+    Write-Host $NewEmail[0].MainWindowHandle
 }
+
 
 
 # =========================== Main Function ===========================
@@ -199,32 +286,33 @@ function Test-App-Launch {
 $Today = Get-Date -Format "dddd"
 
 if ($Today -eq "Sunday") {
-    New-Desktop | Set-DesktopName -Name "Su"
+    #New-Desktop | Set-DesktopName -Name "Su"
 }
 elseif ($Today -eq "Monday") {
-    New-Desktop | Set-DesktopName -Name "M"
+    #New-Desktop | Set-DesktopName -Name "M"
 }
 elseif ($Today -eq "Tuesday") {
-    New-Desktop | Set-DesktopName -Name "T"
+    #New-Desktop | Set-DesktopName -Name "T"
 }
 elseif ($Today -eq "Wednesday") {
-    New-Desktop | Set-DesktopName -Name "W"
+    #New-Desktop | Set-DesktopName -Name "W"
 }
 elseif ($Today -eq "Thursday") {
-    
+    #New-Desktop | Set-DesktopName -Name "Th"
 }
 elseif ($Today -eq "Friday") {
-    New-Desktop | Set-DesktopName -Name "F"
+    #New-Desktop | Set-DesktopName -Name "F"
 }
 elseif ($Today -eq "Saturday") {
-    New-Desktop | Set-DesktopName -Name "Sa"
+    #New-Desktop | Set-DesktopName -Name "Sa"
 }
 else {
-    New-Desktop | Set-DesktopName -Name "U"
+    #New-Desktop | Set-DesktopName -Name "U"
 }
 
-Get-Config-Input
+$WorkspaceData = Get-Config-Input
+Write-Host "Config read!"
+Setup-Workspaces -WorkspaceData $WorkspaceData
 
 #Test-App-Launch
 #Test-Browser-Launch
-#Setup-Cross-Workspace-Apps
