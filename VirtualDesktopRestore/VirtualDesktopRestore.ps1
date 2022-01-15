@@ -1,6 +1,8 @@
 ﻿#
 # Script.ps1
 #
+#
+# Uses PSVirtualDesktop. See: https://github.com/MScholtes/PSVirtualDesktop
 
 
 
@@ -190,49 +192,71 @@ function Setup-Workspaces {
     # Setup each workspace.
     foreach ($WorkspaceInfo in $WorkspaceData.workspaces) {
         #$WorkspaceInfo = $WorkspaceData.workspaces[7]
-        # Create the new desktop.
-        $NewDesktop = New-Desktop | Set-DesktopName -Name $WorkspaceInfo.name -PassThru | Switch-Desktop
-
-        # Set up each app.
-        [Diagnostics.Process[]]$Apps = $null
-        foreach ($AppInfo in $WorkspaceInfo.apps) {
-            if ($AppInfo.name -eq "Slack") {
-                Write-Host "Launching Slack..."
-                $Apps += Launch-Slack -ChannelID ($AppInfo.channel_id) -TeamID ($AppInfo.team_id)
-                Write-Host "Slack launched!"
-            }
-            elseif ($AppInfo.name -eq "Visual Studio") {
-                Write-Host "Launching Visual Studio..."
-                $Apps += Launch-Visual-Studio -InstallPath $AppInfo.path
-                Write-Host "Visual Studio launched!"
-            }
-        }
-        
-        # Move each app to the new virtual desktop.
-        if ($Apps.length -eq 0) {
-            Write-Host "No apps to move."
-        }
-        else {
-            Write-Host ("Moving " + $Apps.length + " apps")
-        }
-        foreach ($newApp in $Apps) {
-            Write-Host (" - Moving " + $newApp.ProcessName + " to desktop " + (Get-DesktopName $NewDesktop))
-            $newApp.MainWindowHandle | Move-Window ($NewDesktop) | Switch-Desktop
-        }
-
-        # Set up each webpage.
-        [string[]]$UrlsToLaunch = $null
-        foreach ($WebpageInfo in $WorkspaceInfo.webpages) {
-            $UrlsToLaunch += $WebpageInfo.url
-        }
-        $NewEdge = Create-Browser-Window -URLsToOpen $UrlsToLaunch -PassThru
-        Write-Host ("Moving " + $NewEdge.ProcessName + " to desktop " + (Get-DesktopName $NewDesktop))
-        $NewEdge.MainWindowHandle | Move-Window ($NewDesktop) | Switch-Desktop
-
+        Setup-Worksapce -WorkspaceInfo $WorkspaceInfo
     }
 
     #Setup the cross-workspace.
-    foreach ($AppInfo in $WorkspaceData.cross_workspace.apps) {
+    Setup-Cross-Workspace -CrossWorkspaceInfo $WorkspaceData.cross_workspace.apps
+}
+
+function Setup-Worksapce {
+    # Define the parameter.
+    param (
+        $WorkspaceInfo
+    )
+
+    # Create the new desktop.
+    Write-Host ("Setting up " + $WorkspaceInfo.name + " workspace.")
+    $NewDesktop = New-Desktop | Set-DesktopName -Name $WorkspaceInfo.name -PassThru | Switch-Desktop
+
+    # Set up each app.
+    [Diagnostics.Process[]]$Apps = $null
+    foreach ($AppInfo in $WorkspaceInfo.apps) {
+        if ($AppInfo.name -eq "Slack") {
+            Write-Host "Launching Slack..."
+            $Apps += Launch-Slack -ChannelID ($AppInfo.channel_id) -TeamID ($AppInfo.team_id)
+            Write-Host "Slack launched!"
+        }
+        elseif ($AppInfo.name -eq "Visual Studio") {
+            Write-Host "Launching Visual Studio..."
+            $Apps += Launch-Visual-Studio -InstallPath $AppInfo.path
+            Write-Host "Visual Studio launched!"
+        }
+    }
+        
+    # Move each app to the new virtual desktop.
+    if ($Apps.length -eq 0) {
+        Write-Host "No apps to move."
+    }
+    else {
+        Write-Host ("Moving " + $Apps.length + " apps")
+    }
+    foreach ($newApp in $Apps) {
+        Write-Host (" - Moving " + $newApp.ProcessName + " to desktop " + (Get-DesktopName $NewDesktop))
+        $newApp.MainWindowHandle | Move-Window ($NewDesktop) | Switch-Desktop
+    }
+
+    # Set up each webpage.
+    [string[]]$UrlsToLaunch = $null
+    foreach ($WebpageInfo in $WorkspaceInfo.webpages) {
+        $UrlsToLaunch += $WebpageInfo.url
+    }
+    $NewEdge = Create-Browser-Window -URLsToOpen $UrlsToLaunch -PassThru
+    Write-Host ("Moving " + $NewEdge.ProcessName + " to desktop " + (Get-DesktopName $NewDesktop))
+    $NewEdge.MainWindowHandle | Move-Window ($NewDesktop) | Switch-Desktop
+
+    Write-Host ($WorkspaceInfo.name + " workspace setup complete!")
+}
+
+function Setup-Cross-Workspace {
+    # Define the parameter.
+    param (
+        $CrossWorkspaceInfo
+    )
+
+    #Setup the cross-workspace.
+    Write-Host "Setting up cross-workspace apps..."
+    foreach ($AppInfo in $CrossWorkspaceInfo.apps) {
         if ($AppInfo.name -eq "Signal") {
             Write-Host "Launching Signal..."
             $Apps += Launch-Signal -InstallPath $AppInfo.path
@@ -254,6 +278,8 @@ function Setup-Workspaces {
     #foreach ($newApp in $Apps) {
         #Pin-Application ($newApp[0].MainWindowHandle)
     #}
+
+    Write-Host "Cross-workspace app setup complete!"
 }
 
 
@@ -282,37 +308,52 @@ function Test-App-Launch {
 
 # =========================== Main Function ===========================
 
+# Read the input data.
+$WorkspaceData = Get-Config-Input
+Write-Host "Config read!"
+
 # Get today's day of the week.
 $Today = Get-Date -Format "dddd"
 
+$WorkspacesToSetUp = $null
+[string[]]$TodaysWorkspaces = $null
 if ($Today -eq "Sunday") {
     #New-Desktop | Set-DesktopName -Name "Su"
+    $TodaysWorkspaces = "GSA", "Video Production"
 }
 elseif ($Today -eq "Monday") {
     #New-Desktop | Set-DesktopName -Name "M"
+    $TodaysWorkspaces = "GSA", "Classwork", "Research - XR Survey", "Research - AR Paper"
 }
 elseif ($Today -eq "Tuesday") {
     #New-Desktop | Set-DesktopName -Name "T"
+    $TodaysWorkspaces = "Classwork", "Research - XR Survey", "Research - AR Paper"
 }
 elseif ($Today -eq "Wednesday") {
     #New-Desktop | Set-DesktopName -Name "W"
+    $TodaysWorkspaces = "Coding"
 }
 elseif ($Today -eq "Thursday") {
     #New-Desktop | Set-DesktopName -Name "Th"
+    $TodaysWorkspaces = "OA"
 }
 elseif ($Today -eq "Friday") {
     #New-Desktop | Set-DesktopName -Name "F"
+    $TodaysWorkspaces = "GRADient"
 }
 elseif ($Today -eq "Saturday") {
     #New-Desktop | Set-DesktopName -Name "Sa"
+    $TodaysWorkspaces = "Coding"
 }
 else {
     #New-Desktop | Set-DesktopName -Name "U"
 }
 
-$WorkspaceData = Get-Config-Input
-Write-Host "Config read!"
-Setup-Workspaces -WorkspaceData $WorkspaceData
+$WorkspacesToSetUp += $WorkspaceData.workspaces | Where-Object -FilterScript { $TodaysWorkspaces -contains $_.name }
+
+Setup-Worksapce -WorkspaceInfo $WorkspacesToSetUp
+Setup-Cross-Workspace -CrossWorkspaceInfo $WorkspaceData.cross_workspace
+#Setup-Workspaces -WorkspaceData $WorkspaceData
 
 #Test-App-Launch
 #Test-Browser-Launch
