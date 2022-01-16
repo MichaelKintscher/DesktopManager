@@ -23,10 +23,43 @@
         <!-- Workspace list -->
         <GridView x:Name="WorkspaceGridView"
                   Grid.Row="1"
-                  ItemsSource="{x:Bind Workspaces, Mode=OneWay}">
+                  ItemsSource="{x:Bind Workspaces, Mode=OneWay}"
+                  SelectionMode="None">
             <GridView.ItemTemplate>
                 <DataTemplate x:DataType="system:String">
-                    <TextBlock Text="{x:Bind }"></TextBlock>
+                    <Grid MinHeight="300"
+                          MinWidth="250">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*"></RowDefinition>
+                            <RowDefinition Height="Auto"></RowDefinition>
+                            <RowDefinition Height="Auto"></RowDefinition>
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"></ColumnDefinition>
+                            <ColumnDefinition Width="*"></ColumnDefinition>
+                        </Grid.ColumnDefinitions>
+                        
+                        <!-- Workspace name -->
+                        <TextBlock Grid.Row="1"
+                                   Grid.Column="0"
+                                   Grid.ColumnSpan="2"
+                                   Margin="10"
+                                   Text="{x:Bind }"></TextBlock>
+                        
+                        <!-- Workspace action buttons -->
+                        <Button x:Name="WorkspaceDetailsButton"
+                                Grid.Row="2"
+                                Grid.Column="0"
+                                HorizontalAlignment="Stretch"
+                                Margin="2"
+                                Content="Details"></Button>
+                        <Button x:Name="LaunchWorkspaceButton"
+                                Grid.Row="2"
+                                Grid.Column="1"
+                                HorizontalAlignment="Stretch"
+                                Margin="2"
+                                Content="Launch"></Button>
+                    </Grid>
                 </DataTemplate>
             </GridView.ItemTemplate>
         </GridView>
