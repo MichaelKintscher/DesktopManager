@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "VirtualDesktopManager (Package)": {
+      "commandName": "MsixPackage"
+    },
+    "VirtualDesktopManager (Unpackaged)": {
+      "commandName": "Project"
+    }
+  }
+}
