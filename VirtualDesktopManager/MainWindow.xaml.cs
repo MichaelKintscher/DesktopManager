@@ -11,6 +11,8 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
+using VirtualDesktopManager.Models;
+using VirtualDesktopManager.Pages;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 
@@ -28,7 +30,7 @@ namespace VirtualDesktopManager
         /// <summary>
         /// The collection of workspaces the user has defined.
         /// </summary>
-        public ObservableCollection<string> Workspaces { get; set; }
+        internal ObservableCollection<Workspace> Workspaces { get; set; }
         #endregion
 
         #region Constructors
@@ -37,7 +39,28 @@ namespace VirtualDesktopManager
             this.InitializeComponent();
 
             // Initialize the collection.
-            this.Workspaces = new ObservableCollection<string>();
+            this.Workspaces = new ObservableCollection<Workspace>();
+        }
+        #endregion
+
+        #region EventHandlers
+        private async void WorkspaceDetailsButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button button)
+            {
+                // Create the workspace detial page and bind the model to it.
+                WorkspaceDetailPage workspaceDetailPage = new WorkspaceDetailPage();
+                workspaceDetailPage.WorkspaceModel = button.Tag as Workspace;
+
+                ContentDialog dialog = new ContentDialog()
+                {
+                    Content = workspaceDetailPage,
+                    XamlRoot = this.WorkspaceGridView.XamlRoot,
+                    CloseButtonText = "Back"
+                };
+
+                var result = await dialog.ShowAsync();
+            }
         }
         #endregion
 
@@ -46,7 +69,7 @@ namespace VirtualDesktopManager
         /// Displays the given list of workspaces in the view.
         /// </summary>
         /// <param name="workspaces">The list of workspae names to display</param>
-        public void DisplayWorkspaces(List<string> workspaces)
+        internal void DisplayWorkspaces(List<Workspace> workspaces)
         {
             // Clear the collection, then refill it with the given workspace list.
             this.Workspaces.Clear();

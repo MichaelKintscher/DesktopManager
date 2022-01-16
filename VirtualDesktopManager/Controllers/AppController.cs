@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using VirtualDesktopManager.Managers;
+using VirtualDesktopManager.Models;
 
 namespace VirtualDesktopManager.Controllers
 {
@@ -42,10 +43,10 @@ namespace VirtualDesktopManager.Controllers
         public async Task InitializeHomePageAsync(MainWindow homePage)
         {
             // Get a list of the workspace names.
-            List<string> workspaceNames = await WorkspaceDataManager.GetWorkspaces();
+            List<Workspace> workspaces = await WorkspaceDataManager.GetWorkspaces();
 
             // Set the view to display the workspaecs.
-            homePage.DisplayWorkspaces(workspaceNames);
+            homePage.DisplayWorkspaces(workspaces);
         }
         #endregion
     }

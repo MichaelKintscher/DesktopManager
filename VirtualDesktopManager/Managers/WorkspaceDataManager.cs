@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using VirtualDesktopManager.Models;
 using Windows.Data.Json;
 using Windows.Storage;
 
@@ -18,9 +19,9 @@ namespace VirtualDesktopManager.Managers
         /// Gets the workspaces the user has defined.
         /// </summary>
         /// <returns></returns>
-        internal static async Task<List<string>> GetWorkspaces()
+        internal static async Task<List<Workspace>> GetWorkspaces()
         {
-            List<string> workspaces = new List<string>();
+            List<Workspace> workspaces = new List<Workspace>();
 
             string fileContent = "";
             try
@@ -42,11 +43,14 @@ namespace VirtualDesktopManager.Managers
             JsonArray workspacesArray = jsonObject["workspaces"].GetArray();
             foreach (var workspaceJson in workspacesArray)
             {
-                JsonObject workspace = workspaceJson.GetObject();
-                string workspaceName = workspace["name"].GetString();
+                // Create the workspace object.
+                Workspace workspace = new Workspace();
+
+                JsonObject workspaceObject = workspaceJson.GetObject();
+                workspace.Name = workspaceObject["name"].GetString();
 
                 // Add the workspace name to the list.
-                workspaces.Add(workspaceName);
+                workspaces.Add(workspace);
             }
 
             return workspaces;
