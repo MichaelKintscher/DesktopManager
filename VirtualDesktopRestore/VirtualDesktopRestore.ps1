@@ -315,45 +315,9 @@ Write-Host "Config read!"
 # Get today's day of the week.
 $Today = Get-Date -Format "dddd"
 
-$WorkspacesToSetUp = $null
-[string[]]$TodaysWorkspaces = $null
-if ($Today -eq "Sunday") {
-    #New-Desktop | Set-DesktopName -Name "Su"
-    $TodaysWorkspaces = "GSA", "Video Production"
-}
-elseif ($Today -eq "Monday") {
-    #New-Desktop | Set-DesktopName -Name "M"
-    $TodaysWorkspaces = "GSA", "Classwork", "Research - XR Survey", "Research - AR Paper"
-}
-elseif ($Today -eq "Tuesday") {
-    #New-Desktop | Set-DesktopName -Name "T"
-    $TodaysWorkspaces = "Classwork", "Research - XR Survey", "Research - AR Paper"
-}
-elseif ($Today -eq "Wednesday") {
-    #New-Desktop | Set-DesktopName -Name "W"
-    $TodaysWorkspaces = "Coding"
-}
-elseif ($Today -eq "Thursday") {
-    #New-Desktop | Set-DesktopName -Name "Th"
-    $TodaysWorkspaces = "OA"
-}
-elseif ($Today -eq "Friday") {
-    #New-Desktop | Set-DesktopName -Name "F"
-    $TodaysWorkspaces = "GRADient"
-}
-elseif ($Today -eq "Saturday") {
-    #New-Desktop | Set-DesktopName -Name "Sa"
-    $TodaysWorkspaces = "Coding"
-}
-else {
-    #New-Desktop | Set-DesktopName -Name "U"
-}
+# Filter to include only workspaces that have today listed in their "days" property.
+$WorkspacesToSetUp += $WorkspaceData.workspaces | Where-Object -FilterScript { $_.days -contains $Today }
 
-$WorkspacesToSetUp += $WorkspaceData.workspaces | Where-Object -FilterScript { $TodaysWorkspaces -contains $_.name }
-
+# Set up the workspaces and the cross-workspace.
 Setup-Worksapce -WorkspaceInfo $WorkspacesToSetUp
 Setup-Cross-Workspace -CrossWorkspaceInfo $WorkspaceData.cross_workspace
-#Setup-Workspaces -WorkspaceData $WorkspaceData
-
-#Test-App-Launch
-#Test-Browser-Launch
