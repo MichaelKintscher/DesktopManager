@@ -7,6 +7,7 @@ using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
@@ -23,14 +24,34 @@ namespace VirtualDesktopManager
     /// </summary>
     public sealed partial class MainWindow : Window
     {
+        #region Properties
+        /// <summary>
+        /// The collection of workspaces the user has defined.
+        /// </summary>
+        public ObservableCollection<string> Workspaces { get; set; }
+        #endregion
+
+        #region Constructors
         public MainWindow()
         {
             this.InitializeComponent();
-        }
 
-        private void myButton_Click(object sender, RoutedEventArgs e)
-        {
-            myButton.Content = "Clicked";
+            // Initialize the collection.
+            this.Workspaces = new ObservableCollection<string>();
         }
+        #endregion
+
+        #region Methods
+        /// <summary>
+        /// Displays the given list of workspaces in the view.
+        /// </summary>
+        /// <param name="workspaces">The list of workspae names to display</param>
+        public void DisplayWorkspaces(List<string> workspaces)
+        {
+            // Clear the collection, then refill it with the given workspace list.
+            this.Workspaces.Clear();
+            workspaces.ForEach(workspace => this.Workspaces.Add(workspace));
+        }
+        #endregion
     }
 }

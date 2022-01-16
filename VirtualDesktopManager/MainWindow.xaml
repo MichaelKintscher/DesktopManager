@@ -5,9 +5,30 @@
     xmlns:local="using:VirtualDesktopManager"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:system="using:System"
     mc:Ignorable="d">
 
-    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
-        <Button x:Name="myButton" Click="myButton_Click">Click Me</Button>
-    </StackPanel>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"></RowDefinition>
+            <RowDefinition Height="*"></RowDefinition>
+        </Grid.RowDefinitions>
+        
+        <!-- Menu bar on top -->
+        <CommandBar Grid.Row="0">
+            <AppBarButton Icon="Add"
+                          Label="Add"></AppBarButton>
+        </CommandBar>
+        
+        <!-- Workspace list -->
+        <GridView x:Name="WorkspaceGridView"
+                  Grid.Row="1"
+                  ItemsSource="{x:Bind Workspaces, Mode=OneWay}">
+            <GridView.ItemTemplate>
+                <DataTemplate x:DataType="system:String">
+                    <TextBlock Text="{x:Bind }"></TextBlock>
+                </DataTemplate>
+            </GridView.ItemTemplate>
+        </GridView>
+    </Grid>
 </Window>

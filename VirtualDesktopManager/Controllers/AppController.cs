@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using VirtualDesktopManager.Managers;
 
 namespace VirtualDesktopManager.Controllers
 {
@@ -29,6 +30,22 @@ namespace VirtualDesktopManager.Controllers
 
             // Set the given page as the root page.
             this.RootPage = rootPage;
+
+            // Initialize the home page.
+            this.InitializeHomePageAsync(rootPage);
+        }
+
+        /// <summary>
+        /// Initializes the Home Page view.
+        /// </summary>
+        /// <returns></returns>
+        public async Task InitializeHomePageAsync(MainWindow homePage)
+        {
+            // Get a list of the workspace names.
+            List<string> workspaceNames = await WorkspaceDataManager.GetWorkspaces();
+
+            // Set the view to display the workspaecs.
+            homePage.DisplayWorkspaces(workspaceNames);
         }
         #endregion
     }
