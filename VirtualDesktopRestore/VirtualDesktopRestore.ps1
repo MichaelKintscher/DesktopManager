@@ -148,6 +148,26 @@ function Launch-Email {
     return $EmailProcess
 }
 
+function Launch-App {
+    # Define the parameters.
+    param (
+        $InstallPath, $AppName
+    )
+
+    # Ensure App has a visible window running.
+    $AppProcess = Start-Process $InstallPath -PassThru
+    Sleep 3
+
+    # Get the App process with the window handle.
+    if ($AppProcess -eq $null) {
+        Write-Host ("WARNING - AppProcess for app " + $AppName + " is null!")
+    }
+    else {
+        Write-Host ($AppName + " has a MainWindowHandle of " + $AppProcess.MainWindowHandle)
+    }
+    return $AppProcess
+}
+
 function Create-Browser-Window {
     # Define the parameter as an array of strings.
     param (
@@ -210,19 +230,7 @@ function Setup-Worksapce {
     $NewDesktop = New-Desktop | Set-DesktopName -Name $WorkspaceInfo.name -PassThru | Switch-Desktop
 
     # Set up each app.
-    [Diagnostics.Process[]]$Apps = $null
-    foreach ($AppInfo in $WorkspaceInfo.apps) {
-        if ($AppInfo.name -eq "Slack") {
-            Write-Host "Launching Slack..."
-            $Apps += Launch-Slack -ChannelID ($AppInfo.channel_id) -TeamID ($AppInfo.team_id)
-            Write-Host "Slack launched!"
-        }
-        elseif ($AppInfo.name -eq "Visual Studio") {
-            Write-Host "Launching Visual Studio..."
-            $Apps += Launch-Visual-Studio -InstallPath $AppInfo.path
-            Write-Host "Visual Studio launched!"
-        }
-    }
+    [Diagnostics.Process[]]$Apps = Launch-Apps -AppsToLaunch $WorkspaceInfo.apps
         
     # Move each app to the new virtual desktop.
     if ($Apps.length -eq 0) {
@@ -256,8 +264,35 @@ function Setup-Cross-Workspace {
 
     #Setup the cross-workspace.
     Write-Host "Setting up cross-workspace apps..."
-    foreach ($AppInfo in $CrossWorkspaceInfo.apps) {
-        if ($AppInfo.name -eq "Signal") {
+    [Diagnostics.Process[]]$Apps = Launch-Apps -AppsToLaunch $CrossWorkspaceInfo.apps
+
+    # Pin each app.
+    #foreach ($newApp in $Apps) {
+        #Pin-Application ($newApp[0].MainWindowHandle)
+    #}
+
+    Write-Host "Cross-workspace app setup complete!"
+}
+
+function Launch-Apps {
+    # Define the parameter.
+    param (
+        $AppsToLaunch
+    )
+
+    [Diagnostics.Process[]]$Apps = $null
+    foreach ($AppInfo in $AppsToLaunch) {
+        if ($AppInfo.name -eq "Slack") {
+            Write-Host "Launching Slack..."
+            $Apps += Launch-Slack -ChannelID ($AppInfo.channel_id) -TeamID ($AppInfo.team_id)
+            Write-Host "Slack launched!"
+        }
+        elseif ($AppInfo.name -eq "Visual Studio") {
+            Write-Host "Launching Visual Studio..."
+            $Apps += Launch-Visual-Studio -InstallPath $AppInfo.path
+            Write-Host "Visual Studio launched!"
+        }
+        elseif ($AppInfo.name -eq "Signal") {
             Write-Host "Launching Signal..."
             $Apps += Launch-Signal -InstallPath $AppInfo.path
             Write-Host "Signal launched!"
@@ -272,14 +307,14 @@ function Setup-Cross-Workspace {
             $Apps += Launch-Email -InstallPath $AppInfo.path
             Write-Host "Mail launched!"
         }
+        else {
+            Write-Host ("Launching " + $AppInfo.name + "...")
+            $Apps += Launch-App -InstallPath $AppInfo.path -AppName $AppInfo.name
+            Write-Host ($AppInfo.name + " launched!")
+        }
     }
 
-    # Pin each app.
-    #foreach ($newApp in $Apps) {
-        #Pin-Application ($newApp[0].MainWindowHandle)
-    #}
-
-    Write-Host "Cross-workspace app setup complete!"
+    return $Apps
 }
 
 
@@ -316,7 +351,7 @@ Write-Host "Config read!"
 $Today = Get-Date -Format "dddd"
 
 # Filter to include only workspaces that have today listed in their "days" property.
-$WorkspacesToSetUp += $WorkspaceData.workspaces | Where-Object -FilterScript { $_.days -contains $Today }
+$WorkspacesToSetUp = $WorkspaceData.workspaces | Where-Object -FilterScript { $_.days -contains $Today }
 
 # Set up the workspaces and the cross-workspace.
 Setup-Worksapce -WorkspaceInfo $WorkspacesToSetUp
