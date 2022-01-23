@@ -49,11 +49,71 @@ namespace VirtualDesktopManager.Managers
                 JsonObject workspaceObject = workspaceJson.GetObject();
                 workspace.Name = workspaceObject["name"].GetString();
 
+                // Get the days the workspace is associated with.
+                JsonArray daysJsonArray = workspaceObject["days"].GetArray();
+                foreach (var daysJson in daysJsonArray)
+                {
+                    workspace.Days[daysJson.GetString()] = true;
+                }
+
+                // Get the apps in the workspace.
+                JsonArray appInfoJsonArray = workspaceObject["apps"].GetArray();
+                foreach (var appInfoJson in appInfoJsonArray)
+                {
+                    workspace.AppInfo.Add(
+                        WorkspaceDataManager.ParseAppInfo(
+                            appInfoJson.GetObject()
+                        )
+                    );
+                }
+
+                // Get the web pages in the workspace.
+                JsonArray webPageInfoJsonArray = workspaceObject["webpages"].GetArray();
+                foreach (var webPageInfoJson in webPageInfoJsonArray)
+                {
+                    workspace.WebPageInfo.Add(
+                        WorkspaceDataManager.ParseWebPageInfo(
+                            webPageInfoJson.GetObject()
+                        )
+                    );
+                }
+
                 // Add the workspace name to the list.
                 workspaces.Add(workspace);
             }
 
             return workspaces;
         }
+
+        #region Helper Methods
+        /// <summary>
+        /// Parses the JSON representation of an AppInfo object.
+        /// </summary>
+        /// <param name="appInfoObject"></param>
+        /// <returns></returns>
+        private static AppInfo ParseAppInfo(JsonObject appInfoObject)
+        {
+            AppInfo appInfo = new AppInfo();
+
+            appInfo.Name = appInfoObject["name"].GetString();
+
+            return appInfo;
+        }
+
+        /// <summary>
+        /// Parses the JSON representation of a WebPageInfo object.
+        /// </summary>
+        /// <param name="webPageInfoObject"></param>
+        /// <returns></returns>
+        private static WebPageInfo ParseWebPageInfo(JsonObject webPageInfoObject)
+        {
+            WebPageInfo webPageInfo = new WebPageInfo();
+
+            webPageInfo.Name = webPageInfoObject["name"].GetString();
+            webPageInfo.Url = webPageInfoObject["url"].GetString();
+
+            return webPageInfo;
+        }
+        #endregion
     }
 }

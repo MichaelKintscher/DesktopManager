@@ -13,7 +13,7 @@ namespace VirtualDesktopManager.Models
     {
         #region Properties
         internal string Name { get; set; }
-        internal bool[] Days { get; set; }
+        internal Dictionary<string, bool> Days { get; set; }
         internal List<AppInfo> AppInfo { get; set; }
         internal List<WebPageInfo> WebPageInfo { get; set; }
         #endregion
@@ -23,7 +23,16 @@ namespace VirtualDesktopManager.Models
         {
             // Initialize the properties to defaults.
             this.Name = "";
-            this.Days = new bool[7];  // 7 boolean values, each represents a day of the week.
+            this.Days = new Dictionary<string, bool>()
+            {
+                { "Sunday", false },
+                { "Monday", false },
+                { "Tuesday", false },
+                { "Wednesday", false },
+                { "Thursday", false },
+                { "Friday", false },
+                { "Saturday", false },
+            };
             this.AppInfo = new List<AppInfo>();
             this.WebPageInfo = new List<WebPageInfo>();
         }

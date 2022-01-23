@@ -4,11 +4,55 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:VirtualDesktopManager.Pages"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:models="using:VirtualDesktopManager.Models"
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
     <Grid>
-        <TextBlock Text="{x:Bind WorkspaceModel.Name}"></TextBlock>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"></RowDefinition>
+            <RowDefinition Height="Auto"></RowDefinition>
+            <RowDefinition Height="Auto"></RowDefinition>
+            <RowDefinition Height="Auto"></RowDefinition>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"></ColumnDefinition>
+            <ColumnDefinition Width="*"></ColumnDefinition>
+        </Grid.ColumnDefinitions>
+        
+        <!-- Workspace Name -->
+        <TextBlock Grid.Row="0"
+                   Grid.ColumnSpan="2"
+                   Text="{x:Bind WorkspaceModel.Name}"></TextBlock>
+
+        <!-- Workspace Apps -->
+        <TextBlock Grid.Row="1"
+                   Grid.Column="0"
+                   Text="Apps"></TextBlock>
+        <ListView Grid.Row="2"
+                  Grid.Column="0"
+                  ItemsSource="{x:Bind WorkspaceModel.AppInfo}">
+            <ListView.ItemTemplate>
+                <DataTemplate x:DataType="models:AppInfo">
+                    <TextBlock Text="{x:Bind Name}"></TextBlock>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
+
+        <!-- Workspace Web Pages -->
+        <TextBlock Grid.Row="1"
+                   Grid.Column="1"
+                   Text="Web Pages"></TextBlock>
+        <ListView Grid.Row="2"
+                  Grid.Column="1"
+                  ItemsSource="{x:Bind WorkspaceModel.WebPageInfo}">
+            <ListView.ItemTemplate>
+                <DataTemplate x:DataType="models:WebPageInfo">
+                    <TextBlock Text="{x:Bind Name}"></TextBlock>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
+
+        <!-- Workspace Days -->
     </Grid>
 </Page>
