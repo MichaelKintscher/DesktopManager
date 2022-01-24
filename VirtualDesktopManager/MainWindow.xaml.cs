@@ -31,6 +31,22 @@ namespace VirtualDesktopManager
         /// The collection of workspaces the user has defined.
         /// </summary>
         internal ObservableCollection<Workspace> Workspaces { get; set; }
+
+        private List<WorkspaceDetailPage.UriInvokedHandler> uriInvokedHandlers { get; set; }
+        #endregion
+
+        #region Events
+        /// <summary>
+        /// Bubbles up the Uri Invoked event from the dialog.
+        /// </summary>
+        internal event WorkspaceDetailPage.UriInvokedHandler UriInvoked
+        {
+            // This is based on the answer here: https://stackoverflow.com/questions/217233/bubbling-up-events
+            //      Events are saved to a collection, to be added and removed when the page (publisher) instance
+            //      is actually created.
+            add { this.uriInvokedHandlers.Add(value); }
+            remove { this.uriInvokedHandlers.Remove(value); }
+        }
         #endregion
 
         #region Constructors
@@ -40,6 +56,7 @@ namespace VirtualDesktopManager
 
             // Initialize the collection.
             this.Workspaces = new ObservableCollection<Workspace>();
+            this.uriInvokedHandlers = new List<WorkspaceDetailPage.UriInvokedHandler>();
         }
         #endregion
 
@@ -48,9 +65,12 @@ namespace VirtualDesktopManager
         {
             if (sender is Button button)
             {
-                // Create the workspace detial page and bind the model to it.
+                // Create the workspace detail page and bind the model to it.
                 WorkspaceDetailPage workspaceDetailPage = new WorkspaceDetailPage();
                 workspaceDetailPage.WorkspaceModel = button.Tag as Workspace;
+
+                // Subscribe to the events.
+                this.uriInvokedHandlers.ForEach(handler => workspaceDetailPage.UriInvoked += handler);
 
                 ContentDialog dialog = new ContentDialog()
                 {
@@ -60,6 +80,9 @@ namespace VirtualDesktopManager
                 };
 
                 var result = await dialog.ShowAsync();
+
+                // Unsubscribe from the events.
+                this.uriInvokedHandlers.ForEach(handler => workspaceDetailPage.UriInvoked -= handler);
             }
         }
         #endregion

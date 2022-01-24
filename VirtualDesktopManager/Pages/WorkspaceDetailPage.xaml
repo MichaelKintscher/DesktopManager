@@ -55,9 +55,12 @@
                    Margin="10,5,5,5"
                    Text="Web Pages"
                    Style="{ThemeResource SubtitleTextBlockStyle}"></TextBlock>
-        <ListView Grid.Row="2"
+        <ListView x:Name="WebPageListView" Grid.Row="2"
                   Grid.Column="1"
-                  ItemsSource="{x:Bind WorkspaceModel.WebPageInfo}">
+                  ItemsSource="{x:Bind WorkspaceModel.WebPageInfo}"
+                  SelectionMode="None"
+                  IsItemClickEnabled="True"
+                  ItemClick="WebPageListView_ItemClick">
             <ListView.ItemTemplate>
                 <DataTemplate x:DataType="models:WebPageInfo">
                     <TextBlock Text="{x:Bind Name}"></TextBlock>
