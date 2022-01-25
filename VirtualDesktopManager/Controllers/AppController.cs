@@ -33,6 +33,17 @@ namespace VirtualDesktopManager.Controllers
             System.Diagnostics.Debug.WriteLine("You launched " + e.Uri);
             Launcher.LaunchUriAsync(new Uri(e.Uri));
         }
+
+        /// <summary>
+        /// Handles a request to launch a workspace.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        public void MainWindow_WorkspaceLaunchRequested(object sender, WorkspaceLaunchRequestedEventArgs e)
+        {
+            System.Diagnostics.Debug.WriteLine("You launched the workspace " + e.Workspace.Name);
+            this.LaunchWorkspaceAsync(e.Workspace);
+        }
         #endregion
 
         #region Methods
@@ -47,6 +58,7 @@ namespace VirtualDesktopManager.Controllers
 
             // Subscribe to the root page's events.
             this.RootPage.UriInvoked += this.MainWindow_UriInvoked;
+            this.RootPage.WorkspaceLaunchRequested += this.MainWindow_WorkspaceLaunchRequested;
 
             // Initialize the home page.
             this.InitializeHomePageAsync(this.RootPage);
@@ -63,6 +75,22 @@ namespace VirtualDesktopManager.Controllers
 
             // Set the view to display the workspaecs.
             homePage.DisplayWorkspaces(workspaces);
+        }
+        #endregion
+
+        #region Helper Methods
+        /// <summary>
+        /// Launches the given workspace using PowerShell.
+        /// </summary>
+        /// <param name="workspace"></param>
+        /// <returns></returns>
+        private async Task LaunchWorkspaceAsync(Workspace workspace)
+        {
+            // Load the script.
+            string script = await ScriptManager.GetScriptAsync("VirtualDesktopRestore.ps1");
+
+            // Launch the workspace using PowerShell.
+            PowerShellManager.LaunchWorkspace(script, workspace);
         }
         #endregion
     }

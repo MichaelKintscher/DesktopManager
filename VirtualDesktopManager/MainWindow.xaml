@@ -61,6 +61,7 @@
                                 HorizontalAlignment="Stretch"
                                 Margin="2"
                                 Content="Launch"
+                                Click="LaunchWorkspaceButton_Click"
                                 Tag="{x:Bind}"></Button>
                     </Grid>
                 </DataTemplate>

@@ -206,20 +206,32 @@ function Create-Browser-Window {
 function Setup-Workspaces {
     # Define the parameter.
     param (
-        $WorkspaceData
+        $Workspaces, $WorkspaceName
     )
 
+    Write-Host ("Setup-Workspaces called... ")
+
+    # If the workspace info object is not provided...
+    if ($Workspaces -eq $null) {
+        # ...populate the workspace info object from the name.
+        # Read the input data.
+        $WorkspaceData = Get-Config-Input
+
+        # Filter to include only workspaces that have today listed in their "days" property.
+        $Workspaces = $WorkspaceData.workspaces | Where-Object -FilterScript { $_.name -eq $WorkspaceName }
+    }
+
     # Setup each workspace.
-    foreach ($WorkspaceInfo in $WorkspaceData.workspaces) {
+    foreach ($WorkspaceInfo in $Workspaces) {
         #$WorkspaceInfo = $WorkspaceData.workspaces[7]
-        Setup-Worksapce -WorkspaceInfo $WorkspaceInfo
+        Setup-Workspace -WorkspaceInfo $WorkspaceInfo
     }
 
     #Setup the cross-workspace.
     Setup-Cross-Workspace -CrossWorkspaceInfo $WorkspaceData.cross_workspace.apps
 }
 
-function Setup-Worksapce {
+function Setup-Workspace {
     # Define the parameter.
     param (
         $WorkspaceInfo
@@ -354,5 +366,5 @@ $Today = Get-Date -Format "dddd"
 $WorkspacesToSetUp = $WorkspaceData.workspaces | Where-Object -FilterScript { $_.days -contains $Today }
 
 # Set up the workspaces and the cross-workspace.
-Setup-Worksapce -WorkspaceInfo $WorkspacesToSetUp
+Setup-Workspaces -Workspaces $WorkspacesToSetUp
 Setup-Cross-Workspace -CrossWorkspaceInfo $WorkspaceData.cross_workspace

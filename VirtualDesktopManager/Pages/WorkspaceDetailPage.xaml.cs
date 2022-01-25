@@ -34,6 +34,9 @@ namespace VirtualDesktopManager.Pages
 
         #region Events
         internal delegate void UriInvokedHandler(object sender, UriInvokedEventArgs e);
+        /// <summary>
+        /// Raised when a Uri is invoked.
+        /// </summary>
         internal event UriInvokedHandler UriInvoked;
         private void RaiseUriInvoked(string type, string uri, Dictionary<string, string> parameters = null)
         {

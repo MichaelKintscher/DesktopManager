@@ -11,6 +11,7 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
+using VirtualDesktopManager.EventArguments;
 using VirtualDesktopManager.Models;
 using VirtualDesktopManager.Pages;
 using Windows.Foundation;
@@ -47,6 +48,18 @@ namespace VirtualDesktopManager
             add { this.uriInvokedHandlers.Add(value); }
             remove { this.uriInvokedHandlers.Remove(value); }
         }
+
+        internal delegate void WorkspaceLaunchRequestedHandler(object sender, WorkspaceLaunchRequestedEventArgs e);
+        /// <summary>
+        /// Raised when a workspace launch is requested.
+        /// </summary>
+        internal event WorkspaceLaunchRequestedHandler WorkspaceLaunchRequested;
+        private void RaiseWorkspaceLaunchRequested(Workspace workspace)
+        {
+            // Create the args and call the listening event handlers, if there are any.
+            WorkspaceLaunchRequestedEventArgs args = new WorkspaceLaunchRequestedEventArgs(workspace);
+            this.WorkspaceLaunchRequested?.Invoke(this, args);
+        }
         #endregion
 
         #region Constructors
@@ -61,6 +74,11 @@ namespace VirtualDesktopManager
         #endregion
 
         #region EventHandlers
+        /// <summary>
+        /// Handles when the Workspace Details button is clicked.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private async void WorkspaceDetailsButton_Click(object sender, RoutedEventArgs e)
         {
             if (sender is Button button)
@@ -83,6 +101,23 @@ namespace VirtualDesktopManager
 
                 // Unsubscribe from the events.
                 this.uriInvokedHandlers.ForEach(handler => workspaceDetailPage.UriInvoked -= handler);
+            }
+        }
+
+        /// <summary>
+        /// Handles when the Launch Workspace button is clicked.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void LaunchWorkspaceButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button button)
+            {
+                // Get the workspace that was selected.
+                Workspace workspace = button.Tag as Workspace;
+
+                // Raise the workspace launch requested event.
+                this.RaiseWorkspaceLaunchRequested(workspace);
             }
         }
         #endregion
