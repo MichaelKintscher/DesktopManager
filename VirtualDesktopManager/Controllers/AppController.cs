@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -87,10 +88,19 @@ namespace VirtualDesktopManager.Controllers
         private async Task LaunchWorkspaceAsync(Workspace workspace)
         {
             // Load the script.
-            string script = await ScriptManager.GetScriptAsync("VirtualDesktopRestore.ps1");
+            //string script = await ScriptManager.GetScriptAsync("VirtualDesktopRestore.ps1");
 
             // Launch the workspace using PowerShell.
-            PowerShellManager.LaunchWorkspace(script, workspace);
+            //PowerShellManager.LaunchWorkspace(script, workspace);
+
+            // Create the new virtual desktop.
+            int desktopIndex = Managers.VirtualDesktopManager.CreateVirtualDesktop(workspace.Name);
+
+            // Launch the webpages.
+            foreach (WebPageInfo webPageInfo in workspace.WebPageInfo)
+            {
+                await Launcher.LaunchUriAsync(new Uri(webPageInfo.Url));
+            }
         }
         #endregion
     }
