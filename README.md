@@ -18,6 +18,7 @@ Instructions
 - Press the button on your Stream Deck to launch the app! When you press the button, you will see the number of virtual desktops you currently have open!
 
 Testing
+
 Current script is a proof of concept. The script opens a window with a button in it. Clicking the button displays the command line arguments passed to the script. The first argument will always be the filepath of the script.
 - Follow the Instructions above, but use "test.py" in place of "main.py".
 - Press the button on your Stream Deck to launch the app! When you press the button, you will see the arguments you gave it displayed below (you will likely have to expand the window to see them all).
