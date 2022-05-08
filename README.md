@@ -1,7 +1,7 @@
 # DesktopManager
 App for managing Windows 11 desktops
 
-The script opens a window with a button in it. Clicking the button displays the number of virtual desktops you currently have open.
+The script opens a window with a button in it. Clicking the button opens a new virtual desktop with the name given in the script arguments and then displays the number of virtual desktops you currently have open.
 
 To use this with Elgato Stream Deck:
 
@@ -15,7 +15,7 @@ Instructions
 - In Stream Deck, add a "Open" command to the button you want to launch this app (the open command is under the "System" tab  on the right).
 - For the "App / File" field, specify the file path of the "main.py" file. Be sure to include the file name "main.py" at the end of the path, and to enclose the path in double quotes (this is all done automatically for you if you use the browse button to select the file).
 - You can now add any arguments you would like in the same "App / File" field. Manually edit the value and add any arguments AFTER the closing double quote, separated by a space. Each argument needs to be separated by a space. If a single argument has a space in it, you will need to wrap that argument in double quotes.
-- Press the button on your Stream Deck to launch the app! When you press the button, you will see the number of virtual desktops you currently have open!
+- Press the button on your Stream Deck to launch the app! When you press the button in the app window, a new virtual desktop will be created with the name of the first argument you specified in the Stream Deck "App / File" field, and you will see the number of virtual desktops you currently have open!
 
 Testing
 
