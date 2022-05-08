@@ -9,6 +9,7 @@
 from asyncio.windows_events import NULL
 from contextlib import nullcontext
 import sys
+import subprocess
 import tkinter as tk
 from pyvda import AppView, get_apps_by_z_order, VirtualDesktop, get_virtual_desktops
 
@@ -79,6 +80,39 @@ def moveCurrentWindowToDesktop(name=NULL):
 
 # ===========================================================================
 
+# ======================= App Management Functions ==========================
+
+def launchApps(apps):
+    # Determine if the app command is an app, a website, or a file.
+    # Websites will include the HTTP or HTTPS protocol.
+    websites = [app for app in apps
+                if "https://" in app[:8]
+                    or "http://" in app[:8]]
+
+    # Apps will include the .exe extension for executable. Note that this will not
+    #   necessarily appear at the end, since command line arguments may be given.
+    applications = [app for app in apps
+                    if ".exe" in app]
+
+    # Files will be anything that remains.
+    files = [app for app in apps
+             if app not in websites
+                and app not in applications]
+
+    # Note that "websites" and "applications" are not guaranteed to be mutually
+    #   exclusive based on the above filters. All valid commnds *should* fall into
+    #   only one list. Even when launching a web browser and specifying a URL in the
+    #   same command, the command starts with the web browser location or reference
+    #   (such as msedge)... NOT the http or https protocol.
+
+    # To address the case where a valid URL may contain ".exe", remove any items
+    #   from the "applications" list that also appear in the "websites" list.
+    applications = [app for app in applications
+                    if app not in websites]
+
+
+# ===========================================================================
+
 # ==================== Script Args Parsing Functions ========================
 
 def getDesktopNameArg():
@@ -113,6 +147,8 @@ def hello ():
     moveCurrentWindowToDesktop(desktopName)
     # Switch to the desktop.
     switchToDesktop(desktopName)
+
+    #subprocess.run('"C:\Program Files (x86)\Microsoft\Edge\Application\msedge_proxy.exe"  --profile-directory=Default --app-id=edcmabgkbicempmpgmniellhbjopafjh --app-url=https://app.clickup.com/')
 
     btnText = 'You have ' + str(getNumDesktops()) + ' virtual desktops open!'
     print(btnText)
