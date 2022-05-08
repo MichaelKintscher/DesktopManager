@@ -89,6 +89,13 @@ def launchApps(apps):
                 if "https://" in app[:8]
                     or "http://" in app[:8]]
 
+    # Custom URI protocls will include "://" near the beginning. websites also
+    #   include this, however, so items already in the websites list will have
+    #   to be removed.
+    customUris = [app for app in apps
+                  if "://" in app
+                    and app not in websites]
+
     # Apps will include the .exe extension for executable. Note that this will not
     #   necessarily appear at the end, since command line arguments may be given.
     applications = [app for app in apps
@@ -97,6 +104,7 @@ def launchApps(apps):
     # Files will be anything that remains.
     files = [app for app in apps
              if app not in websites
+                and app not in customUris
                 and app not in applications]
 
     # Note that "websites" and "applications" are not guaranteed to be mutually
@@ -109,6 +117,27 @@ def launchApps(apps):
     #   from the "applications" list that also appear in the "websites" list.
     applications = [app for app in applications
                     if app not in websites]
+
+    # Now, launch each website. Website URLs must be preceded by the "explorer"
+    #   command, which launches the URL in the default browser.
+    [subprocess.run('explorer "' + website + '"')
+        for website in websites]
+
+    # Launch each custom uri. Custom uri protocols must be preceded by the "start"
+    #   command. Windows's dispatcher will then select an app to handle the URI
+    #   based on what (if any) apps have registered to handle the custom protocol.
+    [subprocess.run('start ' + customUri)
+        for customUri in customUris]
+
+    # Launch each application. Application paths must be enclosed in quotation
+    #   marks.
+    [subprocess.run('"' + app + '"')
+        for app in applications]
+
+    # Open each file. File paths must be enclosed in quotation marks. Windows will
+    #   then open the app
+    [subprocess.run('"' + file + '"')
+        for file in files]
 
 
 # ===========================================================================
