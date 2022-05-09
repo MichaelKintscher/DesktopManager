@@ -1,9 +1,13 @@
 #
 # ========================== Script Arguments ===============================
-#       This script takes one argument:
+#       This script takes two arguments:
 #           - (string) The name of the new virtual desktop to create. The
 #               The new desktop will be given the default Task View name
 #               ("Desktop [#]") if no name is provided.
+#           - (string) "TEST" to enable test mode (not case sensitive). Any
+#               other value (or no value at all) will default to NOT run
+#               test mode. Test mode provides a GUI to trigger the script
+#               and view script output.
 # ===========================================================================
 
 from asyncio.windows_events import NULL
@@ -74,10 +78,23 @@ def switchToDesktop(name=NULL):
             # A desktop with the given name was found. Switch to the target desktop.
             VirtualDesktop(desktopIndex).go()
 
-def moveCurrentWindowToDesktop(name=NULL):
-    currentWindow = AppView.current()
-    desktop = getDesktop(name)
-    currentWindow.move(VirtualDesktop(desktop.number))
+# FUTURE DEVELOPMENT - this is intended to work with windows NOT on the current virtual
+#   desktop - but this does not appear possible in the current version of pyvda library.
+#def moveWindowToDesktop(window, desktopName=NULL):
+#    # Move the specified window to the specified desktop.
+#    desktop = getDesktop(desktopName)
+#
+#    # If no desktop was specified, default to the current desktop.
+#    if (desktop == NULL):
+#        desktop = VirtualDesktop.current()
+#    print(window)
+#    
+#    if (type(window) is int):
+#        windowAppView = AppView(window)
+#    else:
+#        windowAppView = window
+#    
+#    windowAppView.move(VirtualDesktop(desktop.number))
     
 
 # ===========================================================================
@@ -191,17 +208,19 @@ def getDesktopNameArg():
 
     return name
 
+def getTestModeArg():
+    # Default to false if no third argument is provided.
+    testMode = False
+
+    # Third argument will be test mode. This is not case sensitive.
+    if (len(sys.argv) > 2):
+        testMode = sys.argv[2].upper() == "TEST"
+
+    return testMode
+
 # ===========================================================================
 
-root= tk.Tk()
-
-canvas1 = tk.Canvas(root, width = 300, height = 300)
-canvas1.pack()
-
-def hello ():  
-    # Get the desktop name from the script's args.
-    desktopName = getDesktopNameArg()
-    
+def restoreWorkspace(desktopName):
     # Create the desktop if it does not yet exist.
     print("Does ", desktopName, " desktop exist? ", desktopExists(desktopName))
     if (desktopExists(desktopName) == False):
@@ -209,8 +228,6 @@ def hello ():
         #     case where the provided name was NULL, so a name was generated).
         desktopName = createDesktop(desktopName).name
 
-    # Move the current window to the desktop (which is the window created by this code since the user just clicked the button).
-    moveCurrentWindowToDesktop(desktopName)
     # Switch to the desktop.
     switchToDesktop(desktopName)
 
@@ -218,14 +235,45 @@ def hello ():
     apps = getWorkspaceApps(desktopName)
     launchApps(apps)
 
-    #subprocess.run('"C:\Program Files (x86)\Microsoft\Edge\Application\msedge_proxy.exe"  --profile-directory=Default --app-id=edcmabgkbicempmpgmniellhbjopafjh --app-url=https://app.clickup.com/')
+    return apps
 
-    btnText = 'You opened ' + str(apps)  + ' on ' + desktopName + '!'
-    print(btnText)
-    label1 = tk.Label(root, text= btnText, fg='green', font=('helvetica', 12, 'bold'))
-    canvas1.create_window(150, 200, window=label1)
-    
-button1 = tk.Button(text='Create Desktop',command=hello, bg='brown',fg='white')
-canvas1.create_window(150, 150, window=button1)
+def testMode(desktopName):
+    # Create a UI window for displaying output for testing purposes.
+    root= tk.Tk()
 
-root.mainloop()
+    canvas1 = tk.Canvas(root, width = 300, height = 300)
+    canvas1.pack()
+
+    def hello (desktopName):
+        #Restore the desktop.
+        apps = restoreWorkspace(desktopName)
+
+        # Move the current window to the desktop (which is the window created by this code since the user just clicked the button).
+        #root.focus()
+        #moveWindowToDesktop(root.winfo_id(), desktopName)
+
+        btnText = 'You opened ' + str(apps)  + ' on ' + desktopName + '!'
+        print(btnText)
+        label1 = tk.Label(root, text= btnText, fg='green', font=('helvetica', 12, 'bold'))
+        canvas1.create_window(150, 200, window=label1)
+        
+    button1 = tk.Button(text='Create Desktop',command=lambda: hello(desktopName), bg='brown',fg='white')
+    canvas1.create_window(150, 150, window=button1)
+
+    root.mainloop()
+
+def main():
+
+    # Get the desktop name from the script's args.
+    desktopName = getDesktopNameArg()
+
+    # Determing if test mode is enabled.
+    if (getTestModeArg()):
+        testMode(desktopName)
+    else:
+        restoreWorkspace(desktopName)
+
+# Switch between these if you want to always force test mode when using a debugger. "main()" accepts the test mode argument
+#   passed to the script, whereas "testMode()" always runs test mode.
+main()
+#testMode('Desktop 2')
