@@ -8,6 +8,7 @@
 
 from asyncio.windows_events import NULL
 from contextlib import nullcontext
+import os
 import sys
 import subprocess
 import json
@@ -122,7 +123,8 @@ def launchApps(apps):
     #   to be removed.
     customUris = [app for app in apps
                   if "://" in app
-                    and app not in websites]
+                    and "https://" not in app
+                    and "http://" not in app]
 
     # Apps will include the .exe extension for executable. Note that this will not
     #   necessarily appear at the end, since command line arguments may be given.
@@ -146,10 +148,14 @@ def launchApps(apps):
     applications = [app for app in applications
                     if app not in websites]
 
+    print('Attempting to launch websites: ' + str(websites))
+
     # Now, launch each website. Website URLs must be preceded by the "explorer"
     #   command, which launches the URL in the default browser.
     [subprocess.run('explorer "' + website + '"')
         for website in websites]
+
+    print('Attempting to launch custom URIs: ' + str(customUris))
 
     # Launch each custom uri. Custom uri protocols must be preceded by the "start"
     #   command. Windows's dispatcher will then select an app to handle the URI
@@ -157,14 +163,17 @@ def launchApps(apps):
     [subprocess.run('start ' + customUri)
         for customUri in customUris]
 
-    # Launch each application. Application paths must be enclosed in quotation
-    #   marks.
-    [subprocess.run('"' + app + '"')
+    print('Attempting to launch apps: ' + str(applications))
+
+    # Launch each application.
+    [subprocess.run(app)
         for app in applications]
 
+    print('Attempting to open files: ' + str(files))
+
     # Open each file. File paths must be enclosed in quotation marks. Windows will
-    #   then open the app
-    [subprocess.run('"' + file + '"')
+    #   then open the app the file type is associated with.
+    [os.startfile('"' + file + '"')
         for file in files]
 
 
