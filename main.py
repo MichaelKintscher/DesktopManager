@@ -10,6 +10,7 @@ from asyncio.windows_events import NULL
 from contextlib import nullcontext
 import sys
 import subprocess
+import json
 import tkinter as tk
 from pyvda import AppView, get_apps_by_z_order, VirtualDesktop, get_virtual_desktops
 
@@ -81,6 +82,33 @@ def moveCurrentWindowToDesktop(name=NULL):
 # ===========================================================================
 
 # ======================= App Management Functions ==========================
+
+def getWorkspaceApps(workspaceName):
+    # Initialize the list of apps to empty.
+    apps = ['https://google.com']
+
+    # Return an empty list if no workspace name is given.
+    if (workspaceName == NULL):
+        return apps
+
+    # Load the json from the json config file.
+    workspaceFile = open('workspaces.json')
+    workspaceData = json.load(workspaceFile)
+
+    #for i in workspaceData['workspaces']:
+    #    print(i['name'] + " " + str(i['apps']))
+
+    # Get the workspace(s) with a matching name to the given workspace name.
+    workspaces = [wksp for wksp in workspaceData['workspaces']
+                 if wksp['name'] == workspaceName]
+
+    # If at least one workspace with a matching name was found, get the list of
+    #   apps for the workspace. Defaults to the first matching workspace if
+    #   multiple were found.
+    if (len(workspaces) > 0):
+        apps = workspaces[0]['apps']
+
+    return apps
 
 def launchApps(apps):
     # Determine if the app command is an app, a website, or a file.
@@ -177,9 +205,13 @@ def hello ():
     # Switch to the desktop.
     switchToDesktop(desktopName)
 
+    # Get and launch the apps for the workspace.
+    apps = getWorkspaceApps(desktopName)
+    launchApps(apps)
+
     #subprocess.run('"C:\Program Files (x86)\Microsoft\Edge\Application\msedge_proxy.exe"  --profile-directory=Default --app-id=edcmabgkbicempmpgmniellhbjopafjh --app-url=https://app.clickup.com/')
 
-    btnText = 'You have ' + str(getNumDesktops()) + ' virtual desktops open!'
+    btnText = 'You opened ' + str(apps)  + ' on ' + desktopName + '!'
     print(btnText)
     label1 = tk.Label(root, text= btnText, fg='green', font=('helvetica', 12, 'bold'))
     canvas1.create_window(150, 200, window=label1)
