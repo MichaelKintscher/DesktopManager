@@ -52,6 +52,14 @@ def desktopExists(name=NULL):
     desktopIndex = getDesktopIndex(name)
     return desktopIndex != NULL
 
+def normalizeDesktopNames():
+    # Get the list of desktops with empty names.
+    desktops = get_virtual_desktops()
+    
+    # Set the name to what appears in the task view.
+    [desktop.rename("Desktop " + str(desktop.number)) for desktop in desktops if desktop.name == '']
+
+
 def createDesktop(name=NULL):
     newDesktop = VirtualDesktop.create()
     
@@ -264,6 +272,11 @@ def testMode(desktopName):
 
 def main():
 
+    # Normalize the desktop names by setting them to what the user sees in
+    #   Task View. This is necessary because desktops have a default name
+    #   of the empty string until they are renamed.
+    normalizeDesktopNames()
+
     # Get the desktop name from the script's args.
     desktopName = getDesktopNameArg()
 
@@ -271,9 +284,13 @@ def main():
     if (getTestModeArg()):
         testMode(desktopName)
     else:
-        restoreWorkspace(desktopName)
+        # Switch to the desktop if it already exists, or restore it if it does not.
+        if (desktopExists(desktopName)):
+            switchToDesktop(desktopName)
+        else:
+            restoreWorkspace(desktopName)
 
 # Switch between these if you want to always force test mode when using a debugger. "main()" accepts the test mode argument
 #   passed to the script, whereas "testMode()" always runs test mode.
 main()
-#testMode('Desktop 2')
+#testMode('')
